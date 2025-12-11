@@ -1,4 +1,4 @@
-#ChessProject
+# ChessProject
 Created by Pavel Zhernoklev and Mike Agarunov
 Magshimim C++ Course — Mid-Year Project
 Introduction ( ^_^ )
