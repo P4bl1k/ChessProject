@@ -68,16 +68,6 @@ void Figure::move(std::string newPosition)
 }
 
 /*
-This function; checks if a move to the given position is basically valid.
-Input: position - the destination position.
-Output: true  - if the move is valid, false - otherwise.
-*/
-bool Figure::isLegitMove(std::string position) const
-{
-    //To be continued...
-}
-
-/*
 This function; returns the current position of the figure.
 Input: None.
 Output: position - the figure position.

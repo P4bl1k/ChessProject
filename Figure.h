@@ -53,8 +53,7 @@ class Figure
         Input: position - the destination position.
         Output: true  - if the move is valid, false - otherwise.
         */
-        virtual bool isLegitMove(std::string position) const;
-
+        virtual bool isLegitMove(std::string position) const = 0;
         /*
         This function; returns the current position of the figure.
         Input: None.
