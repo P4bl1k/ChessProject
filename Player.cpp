@@ -1,21 +1,55 @@
 #include "Player.h"
+#include <iostream>
+#include <string>
+#include <vector>
 
-/* ---------------- CONSTRUCTOR ---------------- */
-
-Player::Player() {
+/*
+This function; is the constructor for the Player class, it initializes the player with a pointer to the board ->
+-> sets the turn state to false and the check state to false.
+input: board - pointer to the game board.
+output: None.
+*/
+Player::Player(Board* board)
+{
+    this->board = board;
     thisPlayerTurn = false;
     isChecked = false;
 }
 
-/* ---------------- FIGURE MANAGEMENT ---------------- */
+/*
+This function; is the destructor for the Player class, it deletes all dynamically allocated figures owned by the player.
+input: None.
+output: None.
+*/
+Player::~Player()
+{
+    for (Figure* f : figures)
+    {
+        delete f;
+    }
+}
 
-void Player::addFigure(Figure* newFigure) {
+/*
+This function; adds a new figure to the player's figure list.
+input: newFigure - pointer to the figure to add.
+output: None.
+*/
+void Player::addFigure(Figure* newFigure)
+{
     figures.push_back(newFigure);
 }
 
-void Player::removeFigure(string position) {
-    for (int i = 0; i < figures.size(); i++) {
-        if (figures[i]->getPosition() == position) {
+/*
+This function; removes a figure from the player by its board position.
+input: position - position of the figure in chess notation.
+output: None.
+*/
+void Player::removeFigure(string position)
+{
+    for (int i = 0; i < figures.size(); i++)
+    {
+        if (figures[i]->getPosition() == position)
+        {
             delete figures[i];
             figures.erase(figures.begin() + i);
             return;
@@ -23,106 +57,162 @@ void Player::removeFigure(string position) {
     }
 }
 
-vector<Figure*> Player::getFigureVector() {
+/*
+This function; returns the vector containing all the player's figures.
+input: None.
+output: figures - a vector of pointers to Figure objects.
+*/
+vector<Figure*> Player::getFigureVector()
+{
     return figures;
 }
 
-Figure* Player::getFigureAtLocationX(string location) {
-    for (Figure* f : figures) {
+/*
+This function; returns the figure located at a given position.
+input: location - board position in chess notation
+output: f / ... - pointer to the figure if found, nullptr otherwise.
+*/
+Figure* Player::getFigureAtLocationX(string location)
+{
+    for (Figure* f : figures)
+    {
         if (f->getPosition() == location)
+        {
             return f;
+        }
     }
     return nullptr;
 }
 
-/* ---------------- KING & CHECK ---------------- */
-
-string Player::getKingLocation() {
-    for (Figure* f : figures) {
-        if (f->getName() == "King")
+/*
+This function; returns the current location of the player's king.
+input: None.
+output: ... - position of the king as a string, or empty string if not found.
+*/
+string Player::getKingLocation()
+{
+    for (Figure* f : figures)
+    {
+        if (f->getType() == "King")
+        {
             return f->getPosition();
+        }
     }
     return "";
 }
 
-void Player::setCheckState(bool check) {
+/*
+This function; sets the player's check state.
+input: check: True - if the player is in check, False - otherwise.
+output: None.
+*/
+void Player::setCheckState(bool check)
+{
     isChecked = check;
 }
 
-bool Player::isCheckedState() const {
+/*
+This function; checks whether the player is currently in check.
+input: None.
+output: isChecked: True - if the player is in check, False - otherwise.
+*/
+bool Player::isCheckedState() const
+{
     return isChecked;
 }
 
-/* ---------------- TURN HANDLING ---------------- */
-
-bool Player::isPlayerTurn() {
+/*
+This function checks whether it is currently this player's turn.
+input: None.
+output: thisPlayerTurn: True - if it is the player's turn, False - otherwise.
+*/
+bool Player::isPlayerTurn()
+{
     return thisPlayerTurn;
 }
 
-void Player::changeTurnState() {
+/*
+This function switches the player's turn state.
+input: None.
+output: None.
+*/
+void Player::changeTurnState()
+{
     thisPlayerTurn = !thisPlayerTurn;
 }
 
-/* ---------------- MOVEMENT LOGIC ---------------- */
-
-bool Player::isOneOfMyFiguresAtXLocation(string location) {
+/*
+This function checks if one of the player's figures is located at the given position.
+input: location - board position in chess notation.
+output: True - if a figure exists at the location, False - otherwise.
+*/
+bool Player::isOneOfMyFiguresAtXLocation(string location)
+{
     return getFigureAtLocationX(location) != nullptr;
 }
 
-bool Player::destinationPosOfFigureIsMyFigure(string destinationPos) {
+/*
+This function checks if the destination position contains one of the player's own figures.
+input: destinationPos - destination board position.
+output: True if the destination contains the player's figure.
+*/
+bool Player::destinationPosOfFigureIsMyFigure(string destinationPos)
+{
     return isOneOfMyFiguresAtXLocation(destinationPos);
 }
 
-bool Player::moveFigure(string sourcePosOfFigure, string destinationPosOfFigure) {
-    Figure* fig = getFigureAtLocationX(sourcePosOfFigure);
+/*
+This function moves one of the player's figures from source to destination, it validates the move using the figure and the board.
+input: source - starting position, destination - target position.
+output: True - if the move was successful, False - otherwise.
+*/
+bool Player::moveFigure(string source, string destination)
+{
+    Figure* fig = getFigureAtLocationX(source);
     if (!fig)
+    {
         return false;
-
-    if (!fig->isLegitMove(destinationPosOfFigure))
+    }
+    if (!fig->isLegitMove(destination))
+    {
         return false;
-
-    fig->setPosition(destinationPosOfFigure);
+    }
+    if (!board->moveFigureAtBoard(source, destination)) //BOARD executes the move (including en passant).
+    {
+        return false;
+    }
+    fig->move(destination);
     return true;
 }
 
+/*
+This function checks if any of the player's figures can reach the given location.
+input: location - target board position.
+output: True - if at least one figure can reach the location, False - otherwise.
+*/
 bool Player::isOneOfMyFiguresCanReachLocation(const string location)
 {
-	for (int i = 0; i < figures.size(); i++)
-	{
-		string oldPos = figures[i]->getPosition();
-
-		if (this->figures[i]->isLegitMove(location))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-/* ---------------- PAWN SPECIAL LOGIC ---------------- */
-
-bool Player::isLegitEatingMoveForPawn(string source, string destination, string name) {
-    if (name != "Pawn")
-        return false;
-
-    int srcCol = source[0] - 'a';
-    int srcRow = source[1] - '0';
-    int dstCol = destination[0] - 'a';
-    int dstRow = destination[1] - '0';
-
-    // Pawn eats diagonally (1 step)
-    if (abs(srcCol - dstCol) == 1 && abs(srcRow - dstRow) == 1)
-        return true;
-
+    for (Figure* f : figures)
+    {
+        if (f->isLegitMove(location))
+        {
+            return true;
+        }
+    }
     return false;
 }
 
-/* ---------------- STRING REPRESENTATION ---------------- */
-
-string Player::getPlayerString() {
-    string result;
-    for (Figure* f : figures) {
-        result += f->getName() + "@" + f->getPosition() + " ";
+/*
+This function returns a string representation of the player's figures.
+input: None.
+output: result - a string describing all the player's figures.
+*/
+string Player::getPlayerString()
+{
+    string result = "";
+    for (Figure* f : figures)
+    {
+        result += f->getType() + "@" + f->getPosition() + " ";
     }
     return result;
 }
