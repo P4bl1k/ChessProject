@@ -78,19 +78,25 @@ bool Player::moveFigure(string sourcePosOfFigure, string destinationPosOfFigure)
     if (!fig)
         return false;
 
-    if (!fig->canReach(destinationPosOfFigure))
+    if (!fig->isLegitMove(destinationPosOfFigure))
         return false;
 
     fig->setPosition(destinationPosOfFigure);
     return true;
 }
 
-bool Player::isOneOfMyFiguresCanReachLocation(string location) {
-    for (Figure* f : figures) {
-        if (f->canReach(location))
-            return true;
-    }
-    return false;
+bool Player::isOneOfMyFiguresCanReachLocation(const string location)
+{
+	for (int i = 0; i < figures.size(); i++)
+	{
+		string oldPos = figures[i]->getPosition();
+
+		if (this->figures[i]->isLegitMove(location))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 /* ---------------- PAWN SPECIAL LOGIC ---------------- */
