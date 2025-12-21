@@ -6,225 +6,382 @@
 using namespace std;
 
 /*
-This function; is the constructor for the board class.
-input: None.
-output: None.
+Constructor of Board.
+It initializes black and white sides, sets up the board string, adds all pieces and determines the starting turn.
 */
 Board::Board()
 {
-    board = "rnbqkbnrpppppppp################################PPPPPPPPRNBQKBNR0";
+    this->blackSide = *(new Player());
+    this->whiteSide = *(new Player());
+    this->board = "rnbqkbnrpppppppp################################PPPPPPPPRNBQKBNR0";
+
+    // Which side starts (white)
+    this->whiteSide.changeTurnState();
+
+    // Add rooks
+    this->blackSide.addFigure(new Rook("r", "Rook", "a8"));
+    this->blackSide.addFigure(new Rook("r", "Rook", "h8"));
+    this->whiteSide.addFigure(new Rook("R", "Rook", "a1"));
+    this->whiteSide.addFigure(new Rook("R", "Rook", "h1"));
+
+    // Add knights
+    this->blackSide.addFigure(new Knight("k", "Knight", "b8"));
+    this->blackSide.addFigure(new Knight("k", "Knight", "g8"));
+    this->whiteSide.addFigure(new Knight("K", "Knight", "b1"));
+    this->whiteSide.addFigure(new Knight("K", "Knight", "g1"));
+
+    // Add queens
+    this->blackSide.addFigure(new Queen("q", "Queen", "d8"));
+    this->whiteSide.addFigure(new Queen("Q", "Queen", "d1"));
+
+    // Add bishops
+    this->blackSide.addFigure(new Bishop("b", "Bishop", "c8"));
+    this->blackSide.addFigure(new Bishop("b", "Bishop", "f8"));
+    this->whiteSide.addFigure(new Bishop("B", "Bishop", "c1"));
+    this->whiteSide.addFigure(new Bishop("B", "Bishop", "f1"));
+
+    // Add kings
+    this->blackSide.addFigure(new King("k", "King", "e8"));
+    this->whiteSide.addFigure(new King("K", "King", "e1"));
+
+    // Add pawns
+    const std::string blackPawnPositions[] = { "a7","b7","c7","d7","e7","f7","g7","h7" };
+    const std::string whitePawnPositions[] = { "a2","b2","c2","d2","e2","f2","g2","h2" };
+    for (int i = 0; i < 8; i++)
+    {
+        this->blackSide.addFigure(new Pawn("p", "Pawn", blackPawnPositions[i]));
+        this->whiteSide.addFigure(new Pawn("P", "Pawn", whitePawnPositions[i]));
+    }
 }
 
-/*
-This function; checks if it's white's turn.
-input: None.
-output: True - if it's white's turn, False - otherwise.
-*/
+// Returns true if it is white's turn
 bool Board::isWhiteTurn() const
 {
-    return board[64] == '0';
+    return this->whiteSide.isPlayerTurn();
 }
 
-/*
-This function; check if it's black's turn.
-input: None.
-output: True - if it's black's turn, False - otherwise.
-*/
+// Returns true if it is black's turn
 bool Board::isBlackTurn() const
 {
-    return board[64] == '1';
+    return this->blackSide.isPlayerTurn();
 }
 
-/*
-This function; switches the turn between white and black, If it is white's turn, it becomes black's turn and opposite.
-input: None.
-output: None.
-*/
-void Board::changeTurn()
+// Returns board as string
+std::string Board::getBoardString() const
 {
-    board[64] = (board[64] == '0') ? '1' : '0';
+    return this->board;
 }
 
-/*
-This function; returns the current board representation as a string.
-input: None.
-output: board - a string representing the board and current turn.
-*/
-string Board::getBoard() const
-{
-    return board;
-}
-
-/*
-This function; sets the board to a new board state, it must be must be exactly 65 characters long.
-input: newBoard - a string representing the new board.
-output: None.
-*/
-void Board::setBoard(string newBoard)
-{
-    if (newBoard.size() == 65)
-    {
-        board = newBoard;
-    }
-}
-
-/*
-This function; prints the chess board.
-input: None.
-output: None.
-*/
+// Prints the board (black at bottom)
 void Board::printBoard() const
 {
-    cout << "\n  +-----------------+\n";
-    for (int row = 0; row < 8; row++)
+    for (int i = 63; i >= 0; i--)
     {
-        cout << (8 - row) << " | ";
-        for (int col = 0; col < 8; col++)
+        std::cout << board[i] << " ";
+        if (i % 8 == 0 && i != 0)
+            std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+// Removes a piece from a given position
+void Board::eatPiece(const std::string position)
+{
+    if (isWhiteTurn())
+    {
+        if (this->blackSide.isOneOfMyFiguresAtXLocation(position))
+            this->blackSide.removeFigure(position);
+    }
+    else
+    {
+        if (this->whiteSide.isOneOfMyFiguresAtXLocation(position))
+            this->whiteSide.removeFigure(position);
+    }
+}
+
+// Checks if square is occupied
+bool Board::isSquareTaken(const std::string position) const
+{
+    return blackSide.isOneOfMyFiguresAtXLocation(position) || whiteSide.isOneOfMyFiguresAtXLocation(position);
+}
+
+// Moves a piece and returns frontend code
+string Board::movePieceAtBoard(const string source, const string destination)
+{
+    string retString;
+
+    if (isWhiteTurn())
+    {
+        if (blackSide.isOneOfMyFiguresAtXLocation(source))
         {
-            cout << board[row * 8 + col] << ' ';
+            return to_string(ILLEGALMOVENOORIGINALPIECE);
         }
-        cout << "|\n";
-    }
-    cout << "  +-----------------+\n    a b c d e f g h\n";
-}
 
-/*
-This function; removes a figure from the board at the given position.
-input: position - a string representing the board position.
-output: None.
-*/
-void Board::eatFigure(string position)
-{
-    int col = position[0] - 'a';
-    int row = 8 - (position[1] - '0');
-    board[row * 8 + col] = '#';
-}
-
-/*
-This function checks whether a square on the board is occupied.
-input: position - a string representing the board position.
-output: True - if the square is taken, False - otherwise.
-*/
-bool Board::isSquareTaken(string position) const
-{
-    int col = position[0] - 'a';
-    int row = 8 - (position[1] - '0');
-    return board[row * 8 + col] != '#';
-}
-
-/*
-This function; checks if there is any figure blocking the path -> ***Check documentation for mistakes...
--> between a source and destination square, knights are excluded since they can jump over other pieces.
-input: source - starting position in chess notation, destination - target position in chess notation.
-output: True - if there is a blocking figure, False - otherwise.
-*/
-bool Board::isThereInterupterFigureAtPath(string source, string destination) const
-{
-    int srcCol = source[0] - 'a';
-    int srcRow = 8 - (source[1] - '0');
-    int dstCol = destination[0] - 'a';
-    int dstRow = 8 - (destination[1] - '0');
-    int dCol = dstCol - srcCol;
-    int dRow = dstRow - srcRow;
-    if ((abs(dCol) == 1 && abs(dRow) == 2) || (abs(dCol) == 2 && abs(dRow) == 1)) //Knight skips path.
-    {
-        return false;
-    }
-    int stepCol = (dCol == 0 ? 0 : (dCol > 0 ? 1 : -1));
-    int stepRow = (dRow == 0 ? 0 : (dRow > 0 ? 1 : -1));
-    int col = srcCol + stepCol;
-    int row = srcRow + stepRow;
-    while (col != dstCol || row != dstRow)
-    {
-        if (board[row * 8 + col] != '#')
+        if (!whiteSide.isOneOfMyFiguresAtXLocation(source))
         {
+            return to_string(ILLEGALMOVENOORIGINALPIECE);
+        }
+        if (!isOneOfWhitePiecesCanReachLocationX(source, destination) && whiteSide.getFigureAtLocationX(source)->getType() != "Knight")
+        {
+            return to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+        }
+        {
+            Figure* srcFig = whiteSide.getFigureAtLocationX(source);
+            if (srcFig && srcFig->getName() == "P")
+            {
+                // straight file move into any occupied square is illegal
+                if (source[0] == destination[0])
+                {
+                    if (isSquareTaken(destination))
+                    {
+                        return to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+                    }
+                }
+                else
+                {
+                    // diagonal move must capture an opponent piece (no en-passant)
+                    if (!blackSide.isOneOfMyFiguresAtXLocation(destination))
+                    {
+                        return to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+                    }
+                }
+            }
+        }
+        bool flagForPawn = whiteSide.getFigureAtLocationX(source)->isLegitMove(destination);
+        retString = whiteSide.moveFigure(source, destination);
+
+
+        if (blackSide.isOneOfMyFiguresAtXLocation(destination) && retString == "0" && whiteSide.getFigureAtLocationX(destination)->getName() != "p")
+        {
+            //if the eating isn't preventing check i will remake the piece.
+            Figure* tempFigure = blackSide.getFigureAtLocationX(destination);
+            string name, type, position;
+            name = tempFigure->getName();
+            type = tempFigure->getType();
+            position = tempFigure->getPosition();
+
+            eatPiece(destination);
+
+            if (isKingChecked())
+            {
+                //forcing pawn back
+                whiteSide.getFigureAtLocationX(destination)->setPosition(source);
+                //adding the piece back
+                blackSide.addFigure(createFigure(name, type, position));
+                retString = to_string(ILLEGALMOVESELFCHECK);
+                return retString;
+            }
+        }
+
+        if (isKingChecked() && retString == "0")
+        {
+            whiteSide.moveFigure(destination, source);
+            retString = to_string(ILLEGALMOVESELFCHECK);
+            return retString;
+        }
+    }
+    else
+    {
+        //black side's moving code. same as white.
+
+        if (whiteSide.isOneOfMyFiguresAtXLocation(source))
+        {
+            return to_string(ILLEGALMOVENOORIGINALPIECE);
+        }
+
+        if (!blackSide.isOneOfMyFiguresAtXLocation(source))
+        {
+            return to_string(ILLEGALMOVENOORIGINALPIECE);
+        }
+
+        if (!isOneOfBlackPiecesCanReachLocationX(source, destination) && blackSide.getFigureAtLocationX(source)->getType() != "Knight")
+        {
+            return to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+        }
+        {
+            Figure* srcFig = blackSide.getFigureAtLocationX(source);
+            if (srcFig && srcFig->getName() == "p")
+            {
+                // straight file move into any occupied square is illegal
+                if (source[0] == destination[0])
+                {
+                    if (isSquareTaken(destination))
+                    {
+                        return to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+                    }
+                }
+                else
+                {
+                    // diagonal move must capture an opponent piece (no en-passant)
+                    if (!whiteSide.isOneOfMyFiguresAtXLocation(destination))
+                    {
+                        return to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+                    }
+                }
+            }
+        }
+        bool flagForPawn = blackSide.getFigureAtLocationX(source)->isLegitMove(destination);
+        retString = blackSide.moveFigure(source, destination);
+
+
+        if (whiteSide.isOneOfMyFiguresAtXLocation(destination) && retString == "0" && blackSide.getFigureAtLocationX(destination)->getName() != "P")
+        {
+            //if the eating isn't preventing check i will remake the piece.
+            Figure* tempFigure = whiteSide.getFigureAtLocationX(destination);
+            string name, type, position;
+            name = tempFigure->getName();
+            type = tempFigure->getType();
+            position = tempFigure->getPosition();
+
+            eatPiece(destination);
+
+            if (isKingChecked())
+            {
+                //forcing pawn back
+                blackSide.getFigureAtLocationX(destination)->setPosition(source);
+                //adding the piece back
+                whiteSide.addFigure(createFigure(name, type, position));
+                retString = to_string(ILLEGALMOVESELFCHECK);
+                return retString;
+            }
+        }
+
+        if (isKingChecked() && retString == "0")
+        {
+            blackSide.moveFigure(destination, source);
+            retString = to_string(ILLEGALMOVESELFCHECK);
+            return retString;
+        }
+
+    }
+
+    if (retString == "0" || retString == "1" || retString == "8")	//if move was legit.
+    {
+        changeTurn();	//changes turn
+    }
+
+    return retString;
+}
+// Updates board string from pieces
+void Board::updateBoardString()
+{
+    std::string newBoardStr = this->board;
+
+    for (int i = 0; i < 64; i++)
+    {
+        int col = i % 8;
+        int row = 7 - (i / 8);
+        char file = 'a' + col;
+        char rank = '1' + row;
+        std::string pos;
+        pos.push_back(file);
+        pos.push_back(rank);
+
+        Figure* wf = whiteSide.getFigureAtLocationX(pos);
+        Figure* bf = blackSide.getFigureAtLocationX(pos);
+
+        if (wf)
+            newBoardStr[i] = wf->getName()[0];
+        else if (bf)
+            newBoardStr[i] = bf->getName()[0];
+        else
+            newBoardStr[i] = '#';
+    }
+
+    setBoardString(newBoardStr);
+}
+
+// Sets board string
+void Board::setBoardString(const std::string newBoard)
+{
+    this->board = newBoard;
+}
+
+// Changes turn between sides
+void Board::changeTurn()
+{
+    this->blackSide.changeTurnState();
+    this->whiteSide.changeTurnState();
+}
+
+// Checks if king is in check
+bool Board::isKingChecked()
+{
+    if (isWhiteTurn())
+    {
+        if (blackSide.isOneOfMyFiguresCanReachLocation(whiteSide.getKingLocation()))
+        {
+            whiteSide.setCheckState(true);
             return true;
         }
-        col += stepCol;
-        row += stepRow;
+        else
+        {
+            whiteSide.setCheckState(false);
+        }
+    }
+    else
+    {
+        if (whiteSide.isOneOfMyFiguresCanReachLocation(blackSide.getKingLocation()))
+        {
+            blackSide.setCheckState(true);
+            return true;
+        }
+        else
+        {
+            blackSide.setCheckState(false);
+        }
     }
     return false;
 }
 
-/*
-This function moves a figure from a source square to a destination square -> ***Check documentation for mistakes...
--> It checks if the move is valid regarding path blocking and source validity.
-input: source - starting position in chess notation, destination - target position in chess notation.
-output: True - if the move was successful, False - otherwise.
-*/
-bool Board::moveFigureAtBoard(string source, string destination)
+Figure* Board::createFigure(const std::string name, const std::string type, const std::string position)
 {
-    int srcCol = source[0] - 'a';
-    int srcRow = 8 - (source[1] - '0');
-    int dstCol = destination[0] - 'a';
-    int dstRow = 8 - (destination[1] - '0');
-    int srcIndex = srcRow * 8 + srcCol;
-    int dstIndex = dstRow * 8 + dstCol;
-    char piece = board[srcIndex];
-    if (piece == '#')
+    if (type == "Rook") return new Rook(name, type, position);
+    if (type == "Queen") return new Queen(name, type, position);
+    if (type == "Bishop") return new Bishop(name, type, position);
+    if (type == "Pawn") return new Pawn(name, type, position);
+    if (type == "Knight") return new Knight(name, type, position);
+    if (type == "King") return new King(name, type, position);
+    return nullptr;
+}
+
+// Checks if black piece can reach destination
+bool Board::isOneOfBlackPiecesCanReachLocationX(const std::string srcPosition, const std::string destPosition) const
+{
+    return blackSide.isOneOfMyFiguresCanReachLocation(destPosition) && !isThereAnInterrupterPieceAtPath(srcPosition, destPosition);
+}
+
+// Checks if white piece can reach destination
+bool Board::isOneOfWhitePiecesCanReachLocationX(const std::string srcPosition, const std::string destPosition) const
+{
+    return whiteSide.isOneOfMyFiguresCanReachLocation(destPosition) && !isThereAnInterrupterPieceAtPath(srcPosition, destPosition);
+}
+
+// Checks if a path is blocked
+bool Board::isThereAnInterrupterPieceAtPath(std::string srcPosition, std::string destPosition) const
+{
+    // Minimal implementation: step from src to dest and check squares (excluding src and dest)
+    int srcCol = srcPosition[0] - 'a';
+    int srcRow = srcPosition[1] - '1';
+    int dstCol = destPosition[0] - 'a';
+    int dstRow = destPosition[1] - '1';
+
+    int dcol = (dstCol > srcCol) ? 1 : (dstCol < srcCol) ? -1 : 0;
+    int drow = (dstRow > srcRow) ? 1 : (dstRow < srcRow) ? -1 : 0;
+
+    int c = srcCol + dcol;
+    int r = srcRow + drow;
+
+    while (c != dstCol || r != dstRow)
     {
-        return false;
+        std::string pos;
+        pos.push_back('a' + c);
+        pos.push_back('1' + r);
+        if (isSquareTaken(pos))
+            return true;
+        c += dcol;
+        r += drow;
     }
-    if (isThereInterupterFigureAtPath(source, destination))
-    {
-        return false;
-    }
-    board[dstIndex] = piece;
-    board[srcIndex] = '#';
-    changeTurn();
-    return true;
-}
 
-/*
-This function; checks whether the king is currently in check. ***Placeholder... ***Check documentation for mistakes...
-input: None.
-output: ???
-*/
-bool Board::isKingChecked() const
-{
-    //Placeholder.
-	return false; //Stage C.
-}
-
-/*
-This function; returns an updated board string. ***Placeholder... ***Check documentation for mistakes...
-input: None
-output: The current board string.
-*/
-string Board::updatedBoardString() const //TODO...
-{
-    //Placeholder.
-    return board;
-}
-
-/*
-This function; creates a figure on the board. ***Placeholder... ***Check documentation for mistakes...
-input: name - name of the figure, type - type of the figure, position - position in chess.
-output: None
-*/
-void Board::createFigure(string name, string type, string position) //TODO...
-{
-    //Placeholder.
-}
-
-/*
-This function; checks if any black figure can reach a given location. ***Placeholder... ***Check documentation for mistakes...
-input: source - starting position, destination - target position.
-output: ???
-*/
-bool Board::isOneOfBlackFiguresCanReachLocationX(string source, string destination) const
-{
-    //Placeholder.
-    return false;
-}
-
-/*
-This function checks if any white figure can reach a given location. ***Placeholder... ***Check documentation for mistakes...
-input: source - starting position, destination - target position.
-output: ???
-*/
-bool Board::isOneOfWhiteFiguresCanReachLocationX(string source, string destination) const
-{
-    //Placeholder.
     return false;
 }

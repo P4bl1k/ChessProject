@@ -1,12 +1,29 @@
 #include "Rook.h"
 
-Rook::Rook(std::string name, std::string position)
-    : Figure(name, "Rook", position)
+Rook::Rook(const string name, const string type, const string position) : Figure(name, type, position)
 {
 }
-
-bool Rook::isLegitMove(std::string newPosition) const
+string Rook::move(const string newPosition)
 {
-    return newPosition[0] == position[0] ||
-           newPosition[1] == position[1];
+	string returnString = to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+
+	if (isLegitMove(newPosition))
+	{
+		setPosition(newPosition);
+		returnString = to_string(LEGALMOVE);
+	}
+
+	return returnString;
+}
+bool Rook::isLegitMove(const string position) const
+{
+	string currPosition = getPosition();
+
+	//if someone tried to make an unhorizontal/diagonal move with the rook
+	if (currPosition[0] != position[0] && currPosition[1] != position[1])
+	{
+		return false;
+	}
+
+	return true;
 }

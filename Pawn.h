@@ -1,14 +1,11 @@
 #pragma once
 #include "Figure.h"
-#include "Board.h"
 
 class Pawn : public Figure
 {
-private:
-    Board* board;
-
 public:
-    Pawn(string name, string position, Board* board);
-
-    bool isLegitMove(string newPosition) const override;
+	Pawn(const string name, const string type, const string position);
+	virtual string move(const string newPosition) override;
+	virtual bool isLegitMove(const string position) const override;
+	bool isLegitEatingMove(const string position) const;
 };

@@ -4,7 +4,7 @@
 class Knight : public Figure
 {
 public:
-    Knight(std::string name, std::string position);
-
-    bool isLegitMove(std::string newPosition) const override;
+	Knight(const string name, const string type, const string position);
+	virtual string move(const string newPosition) override;
+	virtual bool isLegitMove(const string position) const override;
 };

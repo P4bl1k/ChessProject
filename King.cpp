@@ -1,15 +1,34 @@
 #include "King.h"
 #include <cmath>
 
-King::King(std::string name, std::string position)
-    : Figure(name, "King", position)
+King::King(const string name, const string type, const string position)
+    : Figure(name, type, position)
 {
 }
-
-bool King::isLegitMove(std::string newPosition) const
+string King::move(const string newPosition)
 {
-    int dx = abs(newPosition[0] - position[0]);
-    int dy = abs(newPosition[1] - position[1]);
+	string returnString = to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
 
-    return dx <= 1 && dy <= 1 && !(dx == 0 && dy == 0);
+	if (isLegitMove(newPosition))
+	{
+		setPosition(newPosition);
+		returnString = to_string(LEGALMOVE);
+	}
+
+	return returnString;
+}
+bool King::isLegitMove(const string position) const
+{
+	string currPosition = getPosition();
+
+	bool diagonalOnce = std::abs(currPosition[1] - position[1]) == 1 && std::abs(currPosition[0] - position[0]) == 1;
+	bool straightOnce = (std::abs(currPosition[0] - position[0]) == 1 && std::abs(currPosition[1] - position[1]) == 0) || (std::abs(currPosition[0] - position[0]) == 0 && std::abs(currPosition[1] - position[1]) == 1);
+
+	if (straightOnce || diagonalOnce)
+	{
+		return true;
+	}
+
+	return false;
+
 }

@@ -1,38 +1,95 @@
 #include "Pawn.h"
-#include <cmath>
 
-Pawn::Pawn(string name, string position, Board* board)
-    : Figure(name, "Pawn", position), board(board)
+/*
+constructor of Pawn.
+input: name, type and position of Piece.
+output: none.
+*/
+Pawn::Pawn(const string name, const string type, const string position) : Figure(name, type, position)
 {
+	changePawnMove(true);
 }
 
-bool Pawn::isLegitMove(string newPosition) const 
+/*
+this function moves the Pawn and returns if the function moved the Pawn or not (return is by values that the frontend understands)
+input: new position for Pawn
+output: code that the frontend understand.
+*/
+string Pawn::move(const string newPosition)
 {
-    int colDiff = newPosition[0] - position[0];
-    int rowDiff = newPosition[1] - position[1];
+	string returnString = to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+	if (isLegitMove(newPosition) || isLegitEatingMove(newPosition))
+	{
+		if (isItFirstMove())
+		{
+			changePawnMove(false);
+		}
+		setPosition(newPosition);
+		returnString = to_string(LEGALMOVE);
+	}
 
-    bool isWhite = (name[0] == 'W' || name[0] == 'P');
-    int direction = isWhite ? 1 : -1;
+	return returnString;
+}
 
+/*
+this function returns if the Pawn can reach given position
+input: position to check.
+output: true or false
+*/
+bool Pawn::isLegitMove(const string position) const
+{
+	string currPosition = getPosition();
+	bool straightOnce = false;
 
-    if (colDiff == 0 && rowDiff == direction &&
-        !board->isSquareTaken(newPosition))
-        return true;
+	// black/white forward direction differs by name
+	if (isItFirstMove())
+	{
+		if (this->getName() == "P")
+		{
+			straightOnce = ( ((currPosition[1] - position[1]) == -2) || ((currPosition[1] - position[1]) == -1) )
+							&& ((currPosition[0] - position[0]) == 0);
+		}
+		else
+		{
+			straightOnce = ( ((currPosition[1] - position[1]) == 2) || ((currPosition[1] - position[1]) == 1) )
+							&& ((currPosition[0] - position[0]) == 0);
+		}
+	}
+	else
+	{
+		if (this->getName() == "P")
+		{
+			straightOnce = (currPosition[1] - position[1] == -1) && (currPosition[0] - position[0] == 0);
+		}
+		else
+		{
+			straightOnce = (currPosition[1] - position[1] == 1) && (currPosition[0] - position[0] == 0);
+		}
+	}
 
-    // double move
-    if (colDiff == 0 && rowDiff == 2 * direction &&
-        isItFirstPawnMove)
-        return true;
+	return straightOnce;
+}
 
-    // capture
-    if (abs(colDiff) == 1 && rowDiff == direction &&
-        board->isSquareTaken(newPosition))
-        return true;
+/*
+this function returns if the Pawn can reach given position while eating.
+input: position to check.
+output: true or false
+*/
+bool Pawn::isLegitEatingMove(const string position) const
+{
+	string currPosition = getPosition();
 
-    // EN PASSANT
-    if (abs(colDiff) == 1 && rowDiff == direction &&
-        newPosition == board->getLastPawnDoubleMove())
-        return true;
+	bool diagonalOnce = false;
 
-    return false;
+	//black can eat 1 diagonal forward which is backward for white
+	if (getName() == "P")
+	{
+		diagonalOnce = currPosition[1] - position[1] == -1 && std::abs(currPosition[0] - position[0]) == 1;
+	}
+	else
+	{
+		diagonalOnce = currPosition[1] - position[1] == 1 && std::abs(currPosition[0] - position[0]) == 1;
+	}
+
+	return diagonalOnce;
 }

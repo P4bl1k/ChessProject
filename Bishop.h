@@ -4,7 +4,7 @@
 class Bishop : public Figure
 {
 public:
-    Bishop(std::string name, std::string position);
-
-    bool isLegitMove(std::string newPosition) const override;
+    Bishop(const std::string name,const string type,const std::string position);
+	virtual string move(const string newPosition) override;
+	virtual bool isLegitMove(const string position) const override;
 };

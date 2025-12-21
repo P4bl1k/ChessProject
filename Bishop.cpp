@@ -1,13 +1,28 @@
 #include "Bishop.h"
-#include <cmath>
 
-Bishop::Bishop(std::string name, std::string position)
-    : Figure(name, "Bishop", position)
+Bishop::Bishop(const string name, const string type, const string position) : Figure(name, type, position)
 {
 }
-
-bool Bishop::isLegitMove(std::string newPosition) const
+string Bishop::move(const string newPosition)
 {
-    return abs(newPosition[0] - position[0]) ==
-           abs(newPosition[1] - position[1]);
+	string returnString = to_string(ILLEGALMOVEILLEGALMOVEMENTOFPIECE);
+
+	if (isLegitMove(newPosition))
+	{
+		setPosition(newPosition);
+		returnString = to_string(LEGALMOVE);
+	}
+
+	return returnString;
+}
+bool Bishop::isLegitMove(const string position) const
+{
+	string currPosition = getPosition();
+
+	if (std::abs(currPosition[0] - position[0]) != std::abs(currPosition[1] - position[1]))
+	{
+		return false;
+	}
+
+	return true;
 }

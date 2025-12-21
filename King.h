@@ -4,7 +4,7 @@
 class King : public Figure
 {
 public:
-    King(std::string name, std::string position);
-
-    bool isLegitMove(std::string newPosition) const override;
+    King(const string name, const string type, const string position);
+    virtual string move(const string newPosition) override;
+    virtual bool isLegitMove(const string position) const override;
 };

@@ -1,9 +1,12 @@
 #pragma once
 #include "Figure.h"
 
-class Rook : virtual public Figure
+class Rook : public Figure
 {
 public:
-    Rook(std::string name, std::string position);
-    bool isLegitMove(std::string newPosition) const override;
+	//methods
+	Rook(const string name, const string type, const string position);
+	virtual string move(const string newPosition) override;
+	virtual bool isLegitMove(const string position) const override;
+
 };
