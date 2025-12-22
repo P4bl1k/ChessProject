@@ -1,4 +1,6 @@
 #pragma once
+#ifndef FIGURE_H
+#define FIGURE_H
 #include <iostream>
 #include <string>
 
@@ -58,12 +60,14 @@ class Figure
         Output: None.
         */
         virtual string move(const string newPosition) = 0;
+
         /*
         This function; checks if a move to the given position is basically valid.
         Input: position - the destination position.
         Output: true  - if the move is valid, false - otherwise.
         */
         virtual bool isLegitMove(std::string position) const = 0;
+
         /*
         This function; returns the current position of the figure.
         Input: None.
@@ -84,18 +88,21 @@ class Figure
         Output: type - the figure type.
         */
         std::string getType() const;
-		/*
-		This function returns if it's the first pawn move.
-		Input: none.
-		Output: this->isItFirstPawnMove field's value.
+
+        /*
+        This function returns if it's the first pawn move.
+        Input: none.
+        Output: this->isItFirstPawnMove field's value.
         */
         bool isItFirstMove() const;
-		/*
-		This function; changes the isItFirstPawnMove field to the new state.
-		Input: newState - the new state.
-		Output: None.
+
+        /*
+        This function; changes the isItFirstPawnMove field to the new state.
+        Input: newState - the new state.
+        Output: None.
         */
         void changePawnMove(const bool newState);
+
         /*
         This function; destroys the figure object.
         Input: None.
@@ -103,3 +110,5 @@ class Figure
         */
         virtual ~Figure() = default;
 };
+
+#endif

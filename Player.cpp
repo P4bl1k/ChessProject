@@ -1,14 +1,21 @@
 #include "Player.h"
 #include "Board.h"
-
+#include "Bishop.h"
+#include "Rook.h"
+#include "King.h"
+#include "Pawn.h"
+#include "Queen.h"
+#include "Knight.h"
+#include <iostream>
 #include <string>
 #include <vector>
 
 using namespace std;
 
 /*
-Constructor – initializes player with a board pointer,
-sets turn state to false and check state to false.
+This function; constructs a Player with default values for turn, check state, and board pointer.
+Input: None.
+Output: None.
 */
 Player::Player()
 {
@@ -18,7 +25,9 @@ Player::Player()
 }
 
 /*
-Adds a figure to the player's list.
+This function; adds a chess piece to the player's collection.
+Input: newFigure - pointer to the piece.
+Output: None.
 */
 void Player::addFigure(Figure* newFigure)
 {
@@ -26,7 +35,9 @@ void Player::addFigure(Figure* newFigure)
 }
 
 /*
-Removes a figure by its board position.
+This function; removes a figure from the player at the given position.
+Input: position - figure location.
+Output: None.
 */
 void Player::removeFigure(string position)
 {
@@ -42,7 +53,9 @@ void Player::removeFigure(string position)
 }
 
 /*
-Returns the vector of the player's figures.
+This function; returns the player's list of figures.
+Input: None.
+Output: vector<Figure*> - figures collection.
 */
 vector<Figure*> Player::getFigureVector()
 {
@@ -50,7 +63,9 @@ vector<Figure*> Player::getFigureVector()
 }
 
 /*
-Returns the figure located at a specific position.
+This function; returns the figure located at a specific board position.
+Input: location - board position.
+Output: Figure* - pointer to figure or nullptr.
 */
 Figure* Player::getFigureAtLocationX(const string location) const
 {
@@ -61,11 +76,13 @@ Figure* Player::getFigureAtLocationX(const string location) const
             return this->figures[i];
         }
     }
-    return nullptr; // fix: explicit nullptr when not found
+    return nullptr; //Explicit nullptr when not found.
 }
 
 /*
-This function changes the turn state of the player.
+This function; toggles the player's turn state.
+Input: None.
+Output: None.
 */
 void Player::changeTurnState()
 {
@@ -73,13 +90,20 @@ void Player::changeTurnState()
 }
 
 /*
-Returns true if it is the player's turn.
+This function; checks if it is this player's turn.
+Input: None.
+Output: thisPlayerTurn: true - if it is, false - otherwise.
 */
 bool Player::isPlayerTurn() const
 {
     return this->thisPlayerTurn;
 }
 
+/*
+This function; returns the current position of the player's King.
+Input: None.
+Output: ... - king position.
+*/
 string Player::getKingLocation() const
 {
     for (int i = 0; i < this->figures.size(); i++)
@@ -89,12 +113,13 @@ string Player::getKingLocation() const
             return this->figures[i]->getPosition();
         }
     }
-    return ""; // fix: explicit empty string when not found
+    return ""; //Explicit empty string when not found.
 }
+
 /*
-this function returns if one of this side pieces is at given location.
-input: location to search a piece on.
-output: true or false.
+This function; checks if the player has a figure at a given position.
+Input: location - board position.
+Output: true - if a figure stands there, false - otherwise.
 */
 bool Player::isOneOfMyFiguresAtXLocation(const string location) const
 {
@@ -107,8 +132,11 @@ bool Player::isOneOfMyFiguresAtXLocation(const string location) const
     }
     return false;
 }
+
 /*
-operator =
+This function; assigns another player's state to this player.
+Input: otherPlayer - source player.
+Output: ... - assigned player object.
 */
 Player Player::operator=(Player& otherPlayer)
 {
@@ -118,7 +146,9 @@ Player Player::operator=(Player& otherPlayer)
 }
 
 /*
-Sets check state.
+This function; sets the player's check state.
+Input: check - check status.
+Output: None.
 */
 void Player::setCheckState(bool check)
 {
@@ -126,7 +156,9 @@ void Player::setCheckState(bool check)
 }
 
 /*
-Returns check state.
+This function; checks if the player is currently in check.
+Input: None.
+Output: isChecked: true - if in checked state, false - otherwise.
 */
 bool Player::isCheckedState() const
 {
@@ -134,7 +166,9 @@ bool Player::isCheckedState() const
 }
 
 /*
-Checks if destination contains player's figure.
+This function; checks if a destination position is occupied by the player's own figure.
+Input: destinationPos - target square.
+Output: ...: true - if occupied by the player's own figure, false - otherwise.
 */
 bool Player::destinationPosOfFigureIsMyFigure(string destinationPos)
 {
@@ -142,7 +176,9 @@ bool Player::destinationPosOfFigureIsMyFigure(string destinationPos)
 }
 
 /*
-Moves a figure from source to destination.
+This function; moves a player's figure from source to destination if the move is legal.
+Input: sourcePosOfPiece - starting square, destinationPosOfPiece - target square.
+Output: returnString - move result code.
 */
 string Player::moveFigure(const string sourcePosOfPiece, const string destinationPosOfPiece)
 {
@@ -166,7 +202,9 @@ string Player::moveFigure(const string sourcePosOfPiece, const string destinatio
 }
 
 /*
-Checks if any figure can reach the given location.
+This function; checks if any of the player's figures can legally reach a given location.
+Input: location - target square.
+Output: true - if reachable, false - otherwise.
 */
 bool Player::isOneOfMyFiguresCanReachLocation(const string location) const
 {
@@ -183,7 +221,9 @@ bool Player::isOneOfMyFiguresCanReachLocation(const string location) const
 }
 
 /*
-Returns a string describing all player's figures.
+This function; returns a string representation of all the player's figures and their positions.
+Input: None.
+Output: result - figures and positions.
 */
 string Player::getPlayerString()
 {
@@ -195,17 +235,17 @@ string Player::getPlayerString()
     }
     return result;
 }
+
 /*
-this function checks if a pawn can eat from source to destination.
-input: dource and destination locations to check and name of piece
-output: true or false.
+This function; checks if a pawn's capture move from source to destination is legal.
+Input: source - start square, destination - target square, name - pawn name.
+Output: true - if the capture is legal, false - otherwise.
 */
 bool Player::isLegitEatingMoveForPawn(const string source, const string destination, const string name)
 {
     bool diagonalOnce = false;
 
-    //black can eat 1 diagonal forward which is backward for white
-    if (name == "P")
+    if (name == "P") //Black can eat 1 diagonal forward which is backward for white.
     {
         diagonalOnce = source[1] - destination[1] == -1 && std::abs(source[0] - destination[0]) == 1;
     }
